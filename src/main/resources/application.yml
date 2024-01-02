@@ -1,0 +1,16 @@
+spring:
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/db_news_publish
+        username: root
+        password: ZKLee@003128
+        type: com.alibaba.druid.pool.DruidDataSource
+    data:
+        redis:
+            host: localhost
+            port: 6379
+    jackson:
+        default-property-inclusion: non_null
+mybatis:
+    configuration:
+        map-underscore-to-camel-case: true
