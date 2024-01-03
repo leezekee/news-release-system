@@ -37,11 +37,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public void updateNews(News news) {
-        if (news.getStatus() == -1) {
-            news.setStatus(0);
-        } else if (news.getStatus() == 1) {
-            news.setStatus(0);
-        }
+        news.setStatus(-2);
         newsMapper.updateNews(news);
     }
 
@@ -55,15 +51,18 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public PageBean<News> findAllNews(Integer pageNum, Integer pageSize) {
-        PageBean<News> pageBean = new PageBean<>();
-        PageHelper.startPage(pageNum, pageSize);
-
         List<Journalist> journalistList = journalistService.findAllJournalist();
         Map<Integer, String> journalistMap = journalistList.stream().collect(
                 Collectors.toMap(Journalist::getId, Journalist::getName));
+        PageBean<News> pageBean = new PageBean<>();
+        PageHelper.startPage(pageNum, pageSize);
+
         List<News> newsList = newsMapper.findAllNews();
         for (News news : newsList) {
             news.setJournalistName(journalistMap.get(news.getJournalistId()));
+            if (news.getContent() != null && news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
         }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
@@ -73,15 +72,18 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public PageBean<News> findAllNewsByJournalistId(Integer id, Integer pageNum, Integer pageSize) {
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
         PageBean<News> pageBean = new PageBean<>();
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.findAllNewsByJournalistId(id);
-        List<Journalist> journalistList = journalistService.findAllJournalist();
-        Map<Integer, String> journalistMap = journalistList.stream().collect(
-                Collectors.toMap(Journalist::getId, Journalist::getName));
         for (News news : newsList) {
             news.setJournalistName(journalistMap.get(news.getJournalistId()));
+            if (news.getContent() != null && news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
         }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
@@ -91,15 +93,20 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public PageBean<News> findNewsList(Integer pageNum, Integer pageSize) {
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
         PageBean<News> pageBean = new PageBean<>();
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.findAllReleasedNews();
-        List<Journalist> journalistList = journalistService.findAllJournalist();
-        Map<Integer, String> journalistMap = journalistList.stream().collect(
-                Collectors.toMap(Journalist::getId, Journalist::getName));
         for (News news : newsList) {
             news.setJournalistName(journalistMap.get(news.getJournalistId()));
+            if (news.getContent() != null && news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
+            news.setReviewComment(null);
+            news.setStatus(null);
         }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
@@ -109,15 +116,18 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public PageBean<News> findUnreviewedNewsList(Integer pageNum, Integer pageSize) {
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
         PageBean<News> pageBean = new PageBean<>();
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.findUnreviewedNewsList();
-        List<Journalist> journalistList = journalistService.findAllJournalist();
-        Map<Integer, String> journalistMap = journalistList.stream().collect(
-                Collectors.toMap(Journalist::getId, Journalist::getName));
         for (News news : newsList) {
             news.setJournalistName(journalistMap.get(news.getJournalistId()));
+            if (news.getContent() != null && news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
         }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
@@ -139,13 +149,13 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<News> search(String keyword, Integer limit) {
-        List<News> newsList = newsMapper.searchByKeyword(keyword, limit);
         List<Journalist> journalistList = journalistService.findAllJournalist();
         Map<Integer, String> journalistMap = journalistList.stream().collect(
                 Collectors.toMap(Journalist::getId, Journalist::getName));
+        List<News> newsList = newsMapper.searchByKeyword(keyword, limit);
         for (News news : newsList) {
             news.setJournalistName(journalistMap.get(news.getJournalistId()));
-            if (news.getContent().length() > 20) {
+            if (news.getContent() != null && news.getContent().length() > 20) {
                 news.setContent(news.getContent().substring(0, 20) + "...");
             }
         }
@@ -154,16 +164,16 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public PageBean<News> searchAll(String keyword, Integer pageNum, Integer pageSize) {
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
         PageBean<News> pageBean = new PageBean<>();
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.searchAllByKeyword(keyword);
-        List<Journalist> journalistList = journalistService.findAllJournalist();
-        Map<Integer, String> journalistMap = journalistList.stream().collect(
-                Collectors.toMap(Journalist::getId, Journalist::getName));
         for (News news : newsList) {
             news.setJournalistName(journalistMap.get(news.getJournalistId()));
-            if (news.getContent().length() > 20) {
+            if (news.getContent() != null && news.getContent().length() > 20) {
                 news.setContent(news.getContent().substring(0, 20) + "...");
             }
         }
@@ -174,19 +184,37 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    @Transactional
-    public void deleteNewsByJournalistId(Integer id) {
-        imageService.deleteImageByJournalistId(id);
-        newsMapper.deleteNewsByJournalistId(id);
-    }
-
-    @Override
-    public void saveNews(News news) {
-        newsMapper.saveNews(news);
-    }
-
-    @Override
     public void submitNews(News news) {
         newsMapper.submitNews(news);
+    }
+
+    @Override
+    public News findNewsDetailById(Integer id) {
+        News news = newsMapper.findNewsDetailById(id);
+        if (news == null) {
+            return null;
+        }
+        Journalist journalist = journalistService.findJournalistById(news.getJournalistId());
+        news.setJournalistName(journalist.getName());
+        news.setReviewComment(null);
+        news.setStatus(null);
+        return news;
+    }
+
+    @Override
+    public List<News> findUnpassedNewsList(Integer pageNum, Integer pageSize) {
+        PageBean<News> pageBean = new PageBean<>();
+        PageHelper.startPage(pageNum, pageSize);
+
+        List<News> newsList = newsMapper.findUnpassedNewsList();
+        for (News news : newsList) {
+            if (news.getContent() != null && news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
+        }
+        Page<News> page =(Page<News>) newsList;
+        pageBean.setTotal(page.getTotal());
+        pageBean.setItems(page.getResult());
+        return newsList;
     }
 }

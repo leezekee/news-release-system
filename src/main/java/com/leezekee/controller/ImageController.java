@@ -13,6 +13,27 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ *                     _ooOoo_
+ * 	                  o8888888o
+ * 	                  88" . "88
+ * 	                  (| -_- |)
+ * 	                  O\  =  /O
+ * 	               ____/`---'\____
+ * 	             .'  \\|     |//  `.
+ * 	            /  \\|||  :  |||//  \
+ * 	           /  _||||| -:- |||||-  \
+ * 	           |   | \\\  -  /// |   |
+ * 	           | \_|  ''\-/''  |   |
+ * 	           \  .-\__  `-`  ___/-. /
+ * 	         ___`. .'  /-.-\  `. . __
+ * 	      ."" '<  `.___\_<|>_/___.'  >'"".
+ * 	     | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+ * 	     \  \ `-.   \_ __\ /__ _/   .-` /  /
+ * 	======`-.____`-.___\_____/___.-`____.-'======
+ * 	                   `=-='
+ */
+
 @RestController
 @RequestMapping("/image")
 public class ImageController {
@@ -76,7 +97,7 @@ public class ImageController {
         return Response.success("删除成功");
     }
 
-    @GetMapping("/{imageId}")
+    @GetMapping("/detail/{imageId}")
     public Response getImage(@PathVariable Integer imageId) {
         Image imageById = imageService.findImageById(imageId);
         if (imageById == null) {

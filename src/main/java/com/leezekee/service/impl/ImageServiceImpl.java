@@ -38,8 +38,7 @@ public class ImageServiceImpl implements ImageService {
         image.setNewsId(newsId);
         image.setJournalistId(userId);
         image.setImageUrl(url);
-        Integer id = imageMapper.insertImage(image);
-        image.setId(id);
+        imageMapper.insertImage(image);
         return image;
     }
 

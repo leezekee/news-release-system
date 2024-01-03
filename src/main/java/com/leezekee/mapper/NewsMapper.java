@@ -34,4 +34,8 @@ public interface NewsMapper {
     void saveNews(News news);
 
     void submitNews(News news);
+
+    News findNewsDetailById(Integer id);
+
+    List<News> findUnpassedNewsList();
 }

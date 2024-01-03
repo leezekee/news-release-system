@@ -13,7 +13,7 @@ public interface ImageMapper {
 
     List<Image> findImageByNewsId(Integer newsId);
 
-    Integer insertImage(Image image);
+    void insertImage(Image image);
 
     void updateImage(Image image);
 

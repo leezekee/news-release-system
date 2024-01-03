@@ -1,6 +1,7 @@
 package com.leezekee.service.impl;
 
 import com.leezekee.mapper.JournalistMapper;
+import com.leezekee.mapper.NewsMapper;
 import com.leezekee.pojo.Journalist;
 import com.leezekee.pojo.Role;
 import com.leezekee.service.ImageService;
@@ -19,7 +20,7 @@ public class JournalistServiceImpl implements JournalistService {
     @Autowired
     JournalistMapper journalistMapper;
     @Autowired
-    NewsService newsService;
+    NewsMapper newsMapper;
     @Autowired
     ImageService imageService;
 
@@ -46,7 +47,7 @@ public class JournalistServiceImpl implements JournalistService {
     @Transactional
     public void deleteJournalist(Integer id) {
         imageService.deleteImageByJournalistId(id);
-        newsService.deleteNewsByJournalistId(id);
+        newsMapper.deleteNewsByJournalistId(id);
         journalistMapper.deleteJournalist(id);
     }
 

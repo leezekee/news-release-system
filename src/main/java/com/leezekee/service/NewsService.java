@@ -28,9 +28,9 @@ public interface NewsService {
 
     PageBean<News> searchAll(String keyword, Integer pageNum, Integer pageSize);
 
-    void deleteNewsByJournalistId(Integer id);
-
-    void saveNews(News news);
-
     void submitNews(News news);
+
+    News findNewsDetailById(Integer id);
+
+    List<News> findUnpassedNewsList(Integer pageNum, Integer pageSize);
 }

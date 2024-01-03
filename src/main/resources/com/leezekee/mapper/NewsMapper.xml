@@ -40,7 +40,7 @@
         <set>
             status = #{status},
             <if test="status == -1">
-                reivew_comment = #{reviewComment},
+                review_comment = #{reviewComment},
             </if>
             update_time = now()
         </set>
@@ -81,7 +81,7 @@
         select *
         from tb_news
         where is_delete = 0 and title like concat('%', #{keyword}, '%')
-        order by title;
+        order by title
     </select>
 
     <select id="searchByKeyword" resultType="com.leezekee.pojo.News">
@@ -89,7 +89,7 @@
         from tb_news
         where is_delete = 0 and title like concat('%', #{keyword}, '%')
         order by title
-        limit #{limit};
+        limit #{limit}
     </select>
 
     <select id="findNewsById" resultType="com.leezekee.pojo.News">
@@ -101,14 +101,14 @@
     <select id="findAllNews" resultType="com.leezekee.pojo.News">
         select *
         from tb_news
-        where is_delete = 0;
+        where is_delete = 0 and status != -2;
     </select>
 
     <select id="findAllNewsByJournalistId" resultType="com.leezekee.pojo.News">
         select *
         from tb_news
         where is_delete = 0
-            and journalist_id = #{journalistId};
+            and journalist_id = #{journalistId}
     </select>
 
     <select id="findAllReleasedNews" resultType="com.leezekee.pojo.News">
@@ -120,6 +120,18 @@
     <select id="findUnreviewedNewsList" resultType="com.leezekee.pojo.News">
         select *
         from tb_news
-        where is_delete = 0 and status = 0;
+        where is_delete = 0 and status = 0
+    </select>
+
+    <select id="findNewsDetailById" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and id = #{id} and status = 1;
+    </select>
+
+    <select id="findUnpassedNewsList" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and id = #{id} and status = -1;
     </select>
 </mapper>

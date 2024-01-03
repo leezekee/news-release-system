@@ -3,6 +3,7 @@ package com.leezekee.utils;
 import com.leezekee.pojo.User;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class AuthorizationUtil {
     public static boolean lowerThanCurrentUser(Integer userRole) {
@@ -31,9 +32,9 @@ public class AuthorizationUtil {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentRole = (Integer) claims.get("role");
         Integer currentId = (Integer) claims.get("id");
-        if (userRole.compareTo(currentRole) > 0) {
+        if (userRole - currentRole > 0) {
             return false;
-        } else if (userRole.compareTo(currentRole) == 0) {
+        } else if (userRole - currentRole == 0) {
             return !userId.equals(currentId);
         } else {
             return true;
@@ -44,5 +45,12 @@ public class AuthorizationUtil {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentRole = (Integer) claims.get("role");
         return userRole.equals(currentRole);
+    }
+
+    public static boolean equalsCurrentUser(Integer userRole, Integer userId) {
+        Map<String, Object> claims = ThreadLocalUtil.get();
+        Integer currentRole = (Integer) claims.get("role");
+        Integer currentId = (Integer) claims.get("id");
+        return userRole.equals(currentRole) && userId == currentId;
     }
 }

@@ -9,23 +9,15 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@MultiFieldAssociationCheck.List(
-        value = {
-                @MultiFieldAssociationCheck(
-                        when = "#status.equals(-1)",
-                        must = "#reviewComment != null",
-                        message = "审核不通过时，必须填写审核意见"
-                ),
-        }
-)
 public class News {
-    @NotNull(groups = {Update.class, Save.class, Submit.class}, message = "id不能为空")
+    @NotNull(groups = {Update.class, Save.class, Submit.class, Review.class}, message = "id不能为空")
     Integer id;
 
     @NotBlank(groups = {Add.class, Submit.class}, message = "标题不能为空")
@@ -43,7 +35,7 @@ public class News {
     @NotNull(groups = {Review.class}, message = "审核状态不能为空")
     Integer status;
 
-    @Max(groups = {Review.class}, value = 100, message = "审核意见不能超过100个字符")
+    @Length(groups = {Review.class}, max = 100, message = "审核意见不能超过100个字符")
     String reviewComment;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

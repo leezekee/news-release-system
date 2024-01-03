@@ -16,19 +16,15 @@ public class Response {
     public static Response success(String message) {
         return new Response(Code.SUCCESS, message, null);
     }
-
     public static Response success(String message, Object data) {
         return new Response(Code.SUCCESS, message, data);
     }
-
     public static Response success(int code, String message) {
         return new Response(code, message, null);
     }
-
     public static Response success(int code, String message, Object data) {
         return new Response(code, message, data);
     }
-
     public static Response error(String message) {
         return new Response(Code.UNKNOWN_ERROR, message, null);
     }

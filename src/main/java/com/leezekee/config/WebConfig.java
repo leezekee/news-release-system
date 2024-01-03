@@ -17,7 +17,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/admin/login",
                         "/chiefEditor/login",
-                        "/journalist/login"
+                        "/journalist/login",
+                        "/news/list",
+                        "/news/detail/{id}",
+                        "/news/search",
+                        "/image/detail/{imageId}",
+                        "/image/list/{newsId}"
                 );
     }
 }
