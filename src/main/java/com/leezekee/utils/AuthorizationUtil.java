@@ -8,20 +8,20 @@ public class AuthorizationUtil {
     public static boolean lowerThanCurrentUser(Integer userRole) {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentRole = (Integer) claims.get("role");
-        return userRole - currentRole < 0;
+        return userRole - currentRole > 0;
     }
 
 
-    public static boolean noLowerThanCurrentUserAndOneSelf(User user) {
+    public static boolean lowerThanCurrentUserOrNotOneSelf(User user) {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentRole = (Integer) claims.get("role");
         Integer currentId = (Integer) claims.get("id");
         Integer userRole = user.getRole();
         Integer userId = user.getId();
-        if (userRole.compareTo(currentRole) > 0) {
+        if (userRole - currentRole > 0) {
             return true;
         } else if (userRole.compareTo(currentRole) == 0) {
-            return userId.equals(currentId);
+            return !userId.equals(currentId);
         } else {
             return false;
         }

@@ -16,13 +16,9 @@ public class Administrator implements User{
     Integer id;
 
     @NotBlank(message = "用户名不能为空", groups = Auth.class)
-    @Min(value = 6, message = "用户名长度不能小于6位", groups = Auth.class)
-    @Max(value = 20, message = "用户名长度不能大于20位", groups = Auth.class)
     String username;
 
     @NotBlank(message = "密码不能为空", groups = Auth.class)
-    @Min(value = 6, message = "密码长度不能小于6位", groups = Auth.class)
-    @Max(value = 20, message = "密码长度不能大于20位", groups = Auth.class)
     String password;
     @JsonIgnore
     Integer role = Role.ADMINISTRATOR;

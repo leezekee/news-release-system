@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -64,7 +65,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public Response handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException exception) {
-        return Response.error(Code.WRONG_METHOD, exception.getMessage());
+        return Response.error(Code.WRONG_METHOD, "方法不允许: " + exception.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public Response handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        return Response.error(Code.WRONG_PARAMETER, "方法不允许: " + exception.getMessage());
     }
 
     public static String getStackTraceInfo(Exception e) {

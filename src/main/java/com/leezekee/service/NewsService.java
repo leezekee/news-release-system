@@ -6,7 +6,7 @@ import com.leezekee.pojo.PageBean;
 import java.util.List;
 
 public interface NewsService {
-    int addNews(News news);
+    void addNews(News news);
 
     void updateNews(News news);
 

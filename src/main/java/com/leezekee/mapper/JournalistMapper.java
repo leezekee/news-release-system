@@ -18,4 +18,6 @@ public interface JournalistMapper {
     Journalist findJournalistByUsername(String username);
 
     List<Journalist> findAllJournalist();
+
+    void updatePassword(String password, Integer id);
 }

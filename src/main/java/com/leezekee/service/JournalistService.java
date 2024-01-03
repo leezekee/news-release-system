@@ -2,8 +2,10 @@ package com.leezekee.service;
 
 import com.leezekee.pojo.Journalist;
 
+import java.util.List;
+
 public interface JournalistService {
-    int addJournalist(Journalist journalist);
+    void addJournalist(Journalist journalist);
 
     void deleteJournalist(Integer id);
 
@@ -13,5 +15,11 @@ public interface JournalistService {
 
     Journalist findJournalistByUsername(String username);
 
-    Object findAllJournalist();
+    List<Journalist> findAllJournalist();
+
+    void updatePassword(String newPasswordMd5, Integer id);
+
+    Journalist findJournalistByIdWithoutHidingInformation(Integer id);
+
+    Journalist findJournalistByUsernameWithoutHidingInformation(String username);
 }

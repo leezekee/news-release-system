@@ -3,9 +3,11 @@ package com.leezekee.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.leezekee.mapper.NewsMapper;
+import com.leezekee.pojo.Journalist;
 import com.leezekee.pojo.News;
 import com.leezekee.pojo.PageBean;
 import com.leezekee.service.ImageService;
+import com.leezekee.service.JournalistService;
 import com.leezekee.service.NewsService;
 import com.leezekee.utils.ThreadLocalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class NewsServiceImpl implements NewsService {
@@ -21,13 +24,15 @@ public class NewsServiceImpl implements NewsService {
     NewsMapper newsMapper;
     @Autowired
     ImageService imageService;
+    @Autowired
+    JournalistService journalistService;
 
     @Override
-    public int addNews(News news) {
+    public void addNews(News news) {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer journalistId = (Integer) claims.get("id");
         news.setJournalistId(journalistId);
-        return newsMapper.addNews(news);
+        newsMapper.addNews(news);
     }
 
     @Override
@@ -42,7 +47,10 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public News findNewsById(Integer id) {
-        return newsMapper.findNewsById(id);
+        News news = newsMapper.findNewsById(id);
+        Journalist journalist = journalistService.findJournalistById(news.getJournalistId());
+        news.setJournalistName(journalist.getName());
+        return news;
     }
 
     @Override
@@ -50,7 +58,13 @@ public class NewsServiceImpl implements NewsService {
         PageBean<News> pageBean = new PageBean<>();
         PageHelper.startPage(pageNum, pageSize);
 
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
         List<News> newsList = newsMapper.findAllNews();
+        for (News news : newsList) {
+            news.setJournalistName(journalistMap.get(news.getJournalistId()));
+        }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
         pageBean.setItems(page.getResult());
@@ -63,6 +77,12 @@ public class NewsServiceImpl implements NewsService {
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.findAllNewsByJournalistId(id);
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
+        for (News news : newsList) {
+            news.setJournalistName(journalistMap.get(news.getJournalistId()));
+        }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
         pageBean.setItems(page.getResult());
@@ -75,6 +95,12 @@ public class NewsServiceImpl implements NewsService {
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.findAllReleasedNews();
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
+        for (News news : newsList) {
+            news.setJournalistName(journalistMap.get(news.getJournalistId()));
+        }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
         pageBean.setItems(page.getResult());
@@ -87,6 +113,12 @@ public class NewsServiceImpl implements NewsService {
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.findUnreviewedNewsList();
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
+        for (News news : newsList) {
+            news.setJournalistName(journalistMap.get(news.getJournalistId()));
+        }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
         pageBean.setItems(page.getResult());
@@ -107,7 +139,17 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public List<News> search(String keyword, Integer limit) {
-        return newsMapper.searchByKeyword(keyword, limit);
+        List<News> newsList = newsMapper.searchByKeyword(keyword, limit);
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
+        for (News news : newsList) {
+            news.setJournalistName(journalistMap.get(news.getJournalistId()));
+            if (news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
+        }
+        return newsList;
     }
 
     @Override
@@ -116,6 +158,15 @@ public class NewsServiceImpl implements NewsService {
         PageHelper.startPage(pageNum, pageSize);
 
         List<News> newsList = newsMapper.searchAllByKeyword(keyword);
+        List<Journalist> journalistList = journalistService.findAllJournalist();
+        Map<Integer, String> journalistMap = journalistList.stream().collect(
+                Collectors.toMap(Journalist::getId, Journalist::getName));
+        for (News news : newsList) {
+            news.setJournalistName(journalistMap.get(news.getJournalistId()));
+            if (news.getContent().length() > 20) {
+                news.setContent(news.getContent().substring(0, 20) + "...");
+            }
+        }
         Page<News> page =(Page<News>) newsList;
         pageBean.setTotal(page.getTotal());
         pageBean.setItems(page.getResult());

@@ -51,7 +51,7 @@
                     #{gender},
                 </if>
                 <if test="idCardNumber != null">
-                    #{id_card_number},
+                    #{idCardNumber},
                 </if>
                 <if test="address != null">
                     #{address},
@@ -73,9 +73,6 @@
             </if>
             <if test="name != null">
                 name = #{name},
-            </if>
-            <if test="password != null">
-                password = #{password},
             </if>
             <if test="email != null">
                 email = #{email},
@@ -103,8 +100,14 @@
         where id=#{id}
     </update>
 
-    <update id="deleteChiefEditor" parameterType="com.leezekee.pojo.ChiefEditor">
-        update tb_chief_editor set is_delete=1, update_time=now() where id=#{id}
+    <update id="deleteChiefEditor">
+        update tb_chief_editor set is_delete=1, update_time=now() where id=#{id};
+    </update>
+
+    <update id="updatePassword">
+        update tb_chief_editor
+        set password=#{password}, update_time=now()
+        where id=#{id};
     </update>
 
     <select id="findChiefEditorByUsername" resultType="com.leezekee.pojo.ChiefEditor">
@@ -113,5 +116,11 @@
 
     <select id="findChiefEditorById" resultType="com.leezekee.pojo.ChiefEditor">
         select * from tb_chief_editor where id=#{id} and is_delete=0
+    </select>
+
+    <select id="findChiefEditorList" resultType="com.leezekee.pojo.ChiefEditor">
+        select *
+        from tb_chief_editor
+        where is_delete=0
     </select>
 </mapper>

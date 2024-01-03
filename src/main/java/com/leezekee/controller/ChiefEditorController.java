@@ -1,9 +1,6 @@
 package com.leezekee.controller;
 
-import com.leezekee.pojo.ChiefEditor;
-import com.leezekee.pojo.Code;
-import com.leezekee.pojo.Response;
-import com.leezekee.pojo.Role;
+import com.leezekee.pojo.*;
 import com.leezekee.service.ChiefEditorService;
 import com.leezekee.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +27,8 @@ public class ChiefEditorController {
         if (AuthorizationUtil.lowerThanCurrentUser(Role.ADMINISTRATOR)) {
             return Response.error(Code.UNAUTHORIZED, "无权添加用户");
         }
-        int id = chiefEditorService.addChiefEditor(chiefEditor);
-        return Response.success("添加成功", id);
+        chiefEditorService.addChiefEditor(chiefEditor);
+        return Response.success("添加成功", chiefEditor);
     }
 
     @PostMapping("/login")
@@ -39,7 +36,7 @@ public class ChiefEditorController {
         String username = chiefEditor.getUsername();
         String password = chiefEditor.getPassword();
         String md5Password = Md5Util.genMd5String(password);
-        ChiefEditor chiefEditorByUsername = chiefEditorService.findChiefEditorByUsername(username);
+        ChiefEditor chiefEditorByUsername = chiefEditorService.findChiefEditorByUsernameWithoutHidingInformation(username);
         if (chiefEditorByUsername == null) {
             return Response.error(Code.WRONG_PARAMETER, "用户名不存在");
         }
@@ -56,33 +53,57 @@ public class ChiefEditorController {
         return Response.success("登录成功", token);
     }
 
+    @PutMapping("/password")
+    public Response changePassword(@RequestBody RenewPassword renewPassword, @RequestHeader("Authorization") String token) {
+        String oldPassword = renewPassword.getOldPassword();
+        String newPassword = renewPassword.getNewPassword();
+        Map<String, Object> claims = ThreadLocalUtil.get();
+        Integer id = (Integer) claims.get("id");
+        ChiefEditor chiefEditorById = chiefEditorService.findChiefEditorByIdWithoutHidingInformation(id);
+        String oldPasswordMd5 = Md5Util.genMd5String(oldPassword);
+        if (!chiefEditorById.getPassword().equals(oldPasswordMd5)) {
+            return Response.error(Code.WRONG_PARAMETER,"原密码错误！");
+        }
+        String newPasswordMd5 = Md5Util.genMd5String(newPassword);
+        chiefEditorService.updatePassword(newPasswordMd5, id);
+
+        ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+        ops.getOperations().delete(token);
+
+        String newToken = JwtUtil.genToken(claims);
+
+        ops.set(newToken, newToken, 10, TimeUnit.HOURS);
+        return Response.success("修改成功", newToken);
+    }
+
     @GetMapping("/info")
     public Response getCurrentChiefEditorInfo() {
-        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+        if (!AuthorizationUtil.equalsCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED, "无权获取信息");
         }
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentId = (Integer) claims.get("id");
         ChiefEditor chiefEditor = chiefEditorService.findChiefEditorById(currentId);
-        chiefEditor.setPassword(null);
         return Response.success("获取成功", chiefEditor);
+    }
+
+    @GetMapping("/list")
+    public Response getChiefEditorList() {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.ADMINISTRATOR)) {
+            return Response.error(Code.UNAUTHORIZED,"无权获取信息！");
+        }
+        return Response.success("获取成功", chiefEditorService.findChiefEditorList());
     }
 
     @GetMapping("/info/{id}")
     public Response getChiefEditorInfo(@PathVariable Integer id) {
         ChiefEditor chiefEditor = chiefEditorService.findChiefEditorById(id);
-        chiefEditor.setPassword(null);
-        if (!AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(chiefEditor)) {
-            chiefEditor.setTelephoneNumber(null);
-            chiefEditor.setIdCardNumber(CommonUtil.hideIdCardNumber(chiefEditor.getIdCardNumber()));
-            chiefEditor.setTelephoneNumber(CommonUtil.hideTelephoneNumber(chiefEditor.getTelephoneNumber()));
-        }
         return Response.success("获取成功", chiefEditor);
     }
 
     @PutMapping("/info")
     public Response updateChiefEditorInfo(@RequestBody @Validated(ChiefEditor.Update.class) ChiefEditor chiefEditor) {
-        if (AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(chiefEditor)) {
+        if (AuthorizationUtil.lowerThanCurrentUserOrNotOneSelf(chiefEditor)) {
             return Response.error(Code.UNAUTHORIZED,"无权修改他人信息！");
         }
         if (chiefEditor.getName() != null) {
@@ -97,19 +118,16 @@ public class ChiefEditorController {
                 return Response.error(Code.WRONG_PARAMETER,"用户名已存在！");
             }
         }
-        if (chiefEditor.getPassword() != null) {
-            chiefEditor.setPassword(Md5Util.genMd5String(chiefEditor.getPassword()));
-        }
         chiefEditorService.updateChiefEditor(chiefEditor);
         return Response.success("修改成功");
     }
 
-    @DeleteMapping
-    public Response deleteChiefEditor(@RequestBody @Validated(ChiefEditor.Update.class) ChiefEditor chiefEditor) {
-        if (AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(chiefEditor)) {
+    @DeleteMapping("/{id}")
+    public Response deleteChiefEditor(@PathVariable Integer id) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.ADMINISTRATOR)) {
             return Response.error(Code.UNAUTHORIZED,"无权删除他人信息！");
         }
-        chiefEditorService.deleteChiefEditor(chiefEditor);
+        chiefEditorService.deleteChiefEditor(id);
         return Response.success("删除成功");
     }
 }

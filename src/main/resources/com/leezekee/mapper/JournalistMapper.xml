@@ -49,7 +49,7 @@
                 #{gender},
             </if>
             <if test="idCardNumber != null">
-                #{id_card_number},
+                #{idCardNumber},
             </if>
             <if test="address != null">
                 #{address},
@@ -105,6 +105,12 @@
     <update id="deleteJournalist">
         update tb_journalist
         set is_delete = 1, update_time = now()
+        where id = #{id};
+    </update>
+
+    <update id="updatePassword">
+        update tb_journalist
+        set password = #{password}, update_time = now()
         where id = #{id};
     </update>
 

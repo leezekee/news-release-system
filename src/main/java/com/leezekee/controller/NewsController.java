@@ -24,8 +24,8 @@ public class NewsController {
         if (!AuthorizationUtil.equalsCurrentUser(Role.JOURNALIST)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        int id = newsService.addNews(news);
-        return Response.success("添加成功", id);
+        newsService.addNews(news);
+        return Response.success("添加成功", news);
     }
 
     @PostMapping("/save")

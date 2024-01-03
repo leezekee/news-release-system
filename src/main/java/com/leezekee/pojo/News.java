@@ -3,6 +3,7 @@ package com.leezekee.pojo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.leezekee.anno.MultiFieldAssociationCheck;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class News {
     String title;
 
     Integer journalistId;
+    String journalistName;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime time;
@@ -41,6 +43,7 @@ public class News {
     @NotNull(groups = {Review.class}, message = "审核状态不能为空")
     Integer status;
 
+    @Max(groups = {Review.class}, value = 100, message = "审核意见不能超过100个字符")
     String reviewComment;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

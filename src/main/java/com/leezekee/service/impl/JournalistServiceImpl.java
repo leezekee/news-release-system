@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class JournalistServiceImpl implements JournalistService {
@@ -23,14 +24,22 @@ public class JournalistServiceImpl implements JournalistService {
     ImageService imageService;
 
     @Override
-    public int addJournalist(Journalist journalist) {
+    public void addJournalist(Journalist journalist) {
         if (journalist.getUsername() == null) {
             journalist.setUsername(CommonUtil.randomUsername(Role.JOURNALIST));
         }
         if (journalist.getPassword() == null) {
             journalist.setPassword(CommonUtil.randomPassword());
         }
-        return journalistMapper.addJournalist(journalist);
+        journalist.setUuid(String.valueOf(UUID.randomUUID()));
+        journalistMapper.addJournalist(journalist);
+        if (journalist.getTelephoneNumber() != null) {
+            journalist.setTelephoneNumber(CommonUtil.hideTelephoneNumber(journalist.getTelephoneNumber()));
+        }
+        if (journalist.getIdCardNumber() != null) {
+            journalist.setIdCardNumber(CommonUtil.hideIdCardNumber(journalist.getIdCardNumber()));
+        }
+        journalist.setPassword(null);
     }
 
     @Override
@@ -48,16 +57,63 @@ public class JournalistServiceImpl implements JournalistService {
 
     @Override
     public Journalist findJournalistById(Integer id) {
-        return journalistMapper.findJournalistById(id);
+        Journalist journalist = journalistMapper.findJournalistById(id);
+        if (journalist == null) {
+            return null;
+        }
+        if (journalist.getTelephoneNumber() != null) {
+            journalist.setTelephoneNumber(CommonUtil.hideTelephoneNumber(journalist.getTelephoneNumber()));
+        }
+        if (journalist.getIdCardNumber() != null) {
+            journalist.setIdCardNumber(CommonUtil.hideIdCardNumber(journalist.getIdCardNumber()));
+        }
+        journalist.setPassword(null);
+        return journalist;
     }
 
     @Override
     public Journalist findJournalistByUsername(String username) {
-        return journalistMapper.findJournalistByUsername(username);
+        Journalist journalist = journalistMapper.findJournalistByUsername(username);
+        if (journalist == null) {
+            return null;
+        }
+        if (journalist.getTelephoneNumber() != null) {
+            journalist.setTelephoneNumber(CommonUtil.hideTelephoneNumber(journalist.getTelephoneNumber()));
+        }
+        if (journalist.getIdCardNumber() != null) {
+            journalist.setIdCardNumber(CommonUtil.hideIdCardNumber(journalist.getIdCardNumber()));
+        }
+        journalist.setPassword(null);
+        return journalist;
     }
 
     @Override
     public List<Journalist> findAllJournalist() {
-        return journalistMapper.findAllJournalist();
+        List<Journalist> allJournalist = journalistMapper.findAllJournalist();
+        for (Journalist journalist : allJournalist) {
+            if (journalist.getTelephoneNumber() != null) {
+                journalist.setTelephoneNumber(CommonUtil.hideTelephoneNumber(journalist.getTelephoneNumber()));
+            }
+            if (journalist.getIdCardNumber() != null) {
+                journalist.setIdCardNumber(CommonUtil.hideIdCardNumber(journalist.getIdCardNumber()));
+            }
+            journalist.setPassword(null);
+        }
+        return allJournalist;
+    }
+
+    @Override
+    public void updatePassword(String newPasswordMd5, Integer id) {
+        journalistMapper.updatePassword(newPasswordMd5, id);
+    }
+
+    @Override
+    public Journalist findJournalistByIdWithoutHidingInformation(Integer id) {
+        return journalistMapper.findJournalistById(id);
+    }
+
+    @Override
+    public Journalist findJournalistByUsernameWithoutHidingInformation(String username) {
+        return journalistMapper.findJournalistByUsername(username);
     }
 }
