@@ -1,23 +1,36 @@
 package com.leezekee.service;
 
 import com.leezekee.pojo.News;
+import com.leezekee.pojo.PageBean;
+
+import java.util.List;
 
 public interface NewsService {
-    News getNewsByTitle(String title);
-
-    void addNews(News news);
+    int addNews(News news);
 
     void updateNews(News news);
 
-    News getNewsById(Integer id);
+    News findNewsById(Integer id);
 
-    Object getAllNews();
+    PageBean<News> findAllNews(Integer pageNum, Integer pageSize);
 
-    Object getAllNewsByJournalistId(Integer id);
+    PageBean<News> findAllNewsByJournalistId(Integer id, Integer pageNum, Integer pageSize);
 
-    Object getNewsList();
+    PageBean<News> findNewsList(Integer pageNum, Integer pageSize);
 
-    Object getUnreviewedNewsList();
+    PageBean<News> findUnreviewedNewsList(Integer pageNum, Integer pageSize);
 
     void deleteNewsById(Integer id);
+
+    void reviewNews(News news);
+
+    List<News> search(String keyword, Integer limit);
+
+    PageBean<News> searchAll(String keyword, Integer pageNum, Integer pageSize);
+
+    void deleteNewsByJournalistId(Integer id);
+
+    void saveNews(News news);
+
+    void submitNews(News news);
 }

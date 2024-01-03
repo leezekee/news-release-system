@@ -13,15 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-
-/**
- * # 2. 要求有以下功能：
- * # （1）基本信息维护：能够录入、修改、删除记者基本信息；
- * # （2）新闻提交：登录确认，新闻录入，个人信息维护；
- * # （3）审核：新闻显示控制，新闻删除，图片删除；
- * # （4）显示：新闻题目显示，新闻内容显示，图片显示；
- */
-
 @RestController
 @RequestMapping("/news")
 public class NewsController {
@@ -30,80 +21,97 @@ public class NewsController {
 
     @PostMapping
     public Response addNews(@RequestBody @Validated News news) {
-        Map<String, Object> claims = ThreadLocalUtil.get();
-        Role role = (Role) claims.get("role");
-        Integer id = (Integer) claims.get("id");
-        if (!AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(Role.JOURNALIST, id)) {
+        if (!AuthorizationUtil.equalsCurrentUser(Role.JOURNALIST)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        News newsByTitle = newsService.getNewsByTitle(news.getTitle());
-        if (newsByTitle != null) {
-            return Response.error(Code.WRONG_PARAMETER, "标题已经存在");
+        int id = newsService.addNews(news);
+        return Response.success("添加成功", id);
+    }
+
+    @PostMapping("/save")
+    public Response saveNews(@RequestBody @Validated News news) {
+        if (!AuthorizationUtil.equalsCurrentUser(Role.JOURNALIST)) {
+            return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        news.setJournalistId(id);
-        newsService.addNews(news);
-        return Response.success("添加成功");
+        newsService.saveNews(news);
+        return Response.success("保存成功");
+    }
+
+    @PostMapping("/submit")
+    public Response submitNews(@RequestBody @Validated News news) {
+        if (!AuthorizationUtil.equalsCurrentUser(Role.JOURNALIST)) {
+            return Response.error(Code.UNAUTHORIZED, "权限不足");
+        }
+        newsService.submitNews(news);
+        return Response.success("提交成功");
     }
 
     @PutMapping
     public Response updateNews(@RequestBody @Validated News news) {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer id = (Integer) claims.get("id");
-        if (!AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(Role.JOURNALIST, id)) {
+        if (AuthorizationUtil.lowerThanCurrentUserOrNotOneSelf(Role.JOURNALIST, id)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
-        }
-        News newsByTitle = newsService.getNewsByTitle(news.getTitle());
-        if (newsByTitle != null && !newsByTitle.getId().equals(news.getId())) {
-            return Response.error(Code.WRONG_PARAMETER, "标题已经存在");
         }
         newsService.updateNews(news);
         return Response.success("修改成功");
     }
 
     @GetMapping("/{id}")
-    public Response getNewsById(@PathVariable Integer id) {
-        News news = newsService.getNewsById(id);
+    public Response findNewsById(@PathVariable Integer id) {
+        News news = newsService.findNewsById(id);
         if (news == null) {
             return Response.error(Code.WRONG_PARAMETER, "新闻不存在");
         }
         return Response.success("查询成功", news);
     }
 
+    @GetMapping("/search")
+    public Response search(@RequestParam("key") String key,
+                           @RequestParam("limit") Integer limit,
+                           @RequestParam("pageNum") Integer pageNum,
+                           @RequestParam("pageSize") Integer pageSize) {
+        if (limit == -1) {
+            return Response.success("查询成功", newsService.searchAll(key, pageNum, pageSize));
+        }
+        return Response.success("查询成功", newsService.search(key, limit));
+    }
+
     @GetMapping("/all")
-    public Response getAllNews() {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+    public Response findAllNews(Integer pageNum, Integer pageSize) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        return Response.success("查询成功", newsService.getAllNews());
+        return Response.success("查询成功", newsService.findAllNews(pageNum, pageSize));
     }
 
     @GetMapping("/all/{id}")
-    public Response getAllNewsByJournalistId(@PathVariable Integer id) {
-        if (!AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(Role.JOURNALIST, id)) {
+    public Response findAllNewsByJournalistId(@PathVariable Integer id, Integer pageNum, Integer pageSize) {
+        if (AuthorizationUtil.lowerThanCurrentUserOrNotOneSelf(Role.JOURNALIST, id)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        return Response.success("查询成功", newsService.getAllNewsByJournalistId(id));
+        return Response.success("查询成功", newsService.findAllNewsByJournalistId(id, pageNum, pageSize));
     }
 
     @GetMapping("/list")
-    public Response getNewsList() {
-        return Response.success("查询成功", newsService.getNewsList());
+    public Response findNewsList(Integer pageNum, Integer pageSize) {
+        return Response.success("查询成功", newsService.findNewsList(pageNum, pageSize));
     }
 
     @GetMapping("/list/unreviewed")
-    public Response getUnreviewedNewsList() {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+    public Response findUnreviewedNewsList(Integer pageNum, Integer pageSize) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        return Response.success("查询成功", newsService.getUnreviewedNewsList());
+        return Response.success("查询成功", newsService.findUnreviewedNewsList(pageNum, pageSize));
     }
 
-    @PutMapping("/list/reviewe")
-    public Response getReviewedNewsList(@RequestBody @Validated News news) {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+    @PutMapping("/review")
+    public Response reviewedNewsList(@RequestBody @Validated News news) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
-        News newsById = newsService.getNewsById(news.getId());
+        News newsById = newsService.findNewsById(news.getId());
         if (newsById == null) {
             return Response.error(Code.WRONG_PARAMETER, "新闻不存在");
         }
@@ -118,20 +126,17 @@ public class NewsController {
         if (newStatus == -1 && news.getReviewComment() == null) {
             return Response.error(Code.WRONG_PARAMETER, "缺少审核意见");
         }
-        newsService.updateNews(news);
+        newsService.reviewNews(news);
         return Response.success("修改成功");
     }
 
     @DeleteMapping("/{id}")
     public Response deleteNewsById(@PathVariable Integer id) {
-        Map<String, Object> claims = ThreadLocalUtil.get();
-        Integer userId = (Integer) claims.get("id");
-        Role role = (Role) claims.get("role");
-        News newsById = newsService.getNewsById(id);
+        News newsById = newsService.findNewsById(id);
         if (newsById == null) {
             return Response.error(Code.WRONG_PARAMETER, "新闻不存在");
         }
-        if (!AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(Role.JOURNALIST, newsById.getId())) {
+        if (AuthorizationUtil.lowerThanCurrentUserOrNotOneSelf(Role.JOURNALIST, newsById.getId())) {
             return Response.error(Code.UNAUTHORIZED, "权限不足");
         }
         newsService.deleteNewsById(id);
@@ -139,8 +144,8 @@ public class NewsController {
     }
 
     @GetMapping("/detail/{id}")
-    public Response getNewsDetailById(@PathVariable Integer id) {
-        News newsById = newsService.getNewsById(id);
+    public Response findNewsDetailById(@PathVariable Integer id) {
+        News newsById = newsService.findNewsById(id);
         if (newsById == null) {
             return Response.error(Code.WRONG_PARAMETER, "新闻不存在");
         }

@@ -1,7 +1,9 @@
 package com.leezekee.controller;
 
-import com.leezekee.pojo.*;
-import com.leezekee.service.ChiefEditorService;
+import com.leezekee.pojo.Code;
+import com.leezekee.pojo.Journalist;
+import com.leezekee.pojo.Response;
+import com.leezekee.pojo.Role;
 import com.leezekee.service.JournalistService;
 import com.leezekee.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +26,8 @@ public class JournalistController {
     private StringRedisTemplate stringRedisTemplate;
 
     @PostMapping
-    public Response addJournalist(@RequestBody @Validated Journalist journalist) {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+    public Response addJournalist(@RequestBody @Validated(Journalist.Add.class) Journalist journalist) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED,"无权添加记者！");
         }
         int id = journalistService.addJournalist(journalist);
@@ -34,7 +36,7 @@ public class JournalistController {
 
     @DeleteMapping("/{id}")
     public Response deleteJournalist(@PathVariable Integer id) {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED,"无权删除记者！");
         }
         journalistService.deleteJournalist(id);
@@ -42,9 +44,23 @@ public class JournalistController {
     }
 
     @PutMapping
-    public Response updateJournalist(@RequestBody @Validated Journalist journalist) {
+    public Response updateJournalist(@RequestBody @Validated(Journalist.Update.class) Journalist journalist) {
         if (!AuthorizationUtil.noLowerThanCurrentUserAndOneSelf(journalist)) {
             return Response.error(Code.UNAUTHORIZED,"无权修改其他记者信息！");
+        }
+        if (journalist.getName() != null) {
+            if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+                return Response.error(Code.UNAUTHORIZED,"无权修改姓名！");
+            }
+        }
+        if (journalist.getUsername() != null) {
+            Journalist journalistByUsername = journalistService.findJournalistByUsername(journalist.getUsername());
+            if (journalistByUsername != null && !journalistByUsername.getId().equals(journalist.getId())) {
+                return Response.error(Code.WRONG_PARAMETER,"用户名已存在！");
+            }
+        }
+        if (journalist.getPassword() != null) {
+            journalist.setPassword(Md5Util.genMd5String(journalist.getPassword()));
         }
         journalistService.updateJournalist(journalist);
         return Response.success("修改成功");
@@ -62,7 +78,7 @@ public class JournalistController {
 
     @GetMapping
     public Response getCurrentJournalist() {
-        if (AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+        if (AuthorizationUtil.equalsCurrentUser(Role.JOURNALIST)) {
             return Response.error(Code.UNAUTHORIZED,"无权查询信息！");
         }
         Map<String, Object> claims = ThreadLocalUtil.get();
@@ -73,7 +89,7 @@ public class JournalistController {
     }
 
     @PostMapping("/login")
-    public Response login(@RequestBody @Validated Journalist journalist) {
+    public Response login(@RequestBody @Validated(Journalist.Auth.class) Journalist journalist) {
         String username = journalist.getUsername();
         String password = journalist.getPassword();
         String md5Password = Md5Util.genMd5String(password);

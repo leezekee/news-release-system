@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.leezekee.mapper.ChiefEditorMapper">
 
-    <insert id="addChiefEditor" useGeneratedKeys="true" keyProperty="id">
+    <insert id="addChiefEditor" useGeneratedKeys="true" keyProperty="id" parameterType="com.leezekee.pojo.ChiefEditor">
         insert into
             tb_chief_editor(
                     name,
@@ -65,11 +65,14 @@
                )
     </insert>
 
-    <update id="updateChiefEditor">
+    <update id="updateChiefEditor" parameterType="com.leezekee.pojo.ChiefEditor">
         update tb_chief_editor
         <set>
             <if test="username != null">
                 username = #{username},
+            </if>
+            <if test="name != null">
+                name = #{name},
             </if>
             <if test="password != null">
                 password = #{password},
@@ -100,7 +103,7 @@
         where id=#{id}
     </update>
 
-    <update id="deleteChiefEditor">
+    <update id="deleteChiefEditor" parameterType="com.leezekee.pojo.ChiefEditor">
         update tb_chief_editor set is_delete=1, update_time=now() where id=#{id}
     </update>
 

@@ -2,5 +2,125 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.leezekee.mapper.JournalistMapper">
+    <insert id="addJournalist" parameterType="com.leezekee.pojo.Journalist" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_journalist(
+            name,
+            password,
+            username,
+            <if test="email != null">
+                email,
+            </if>
+            <if test="telephoneNumber != null">
+                telephone_number,
+            </if>
+            <if test="age != null">
+                age,
+            </if>
+            <if test="gender != null">
+                gender,
+            </if>
+            <if test="idCardNumber != null">
+                id_card_number,
+            </if>
+            <if test="address != null">
+                address,
+            </if>
+            <if test="introduction != null">
+                introduction,
+            </if>
+            create_time,
+            update_time,
+            is_delete
+        )
+        values(
+            #{name},
+            #{password},
+            #{username},
+            <if test="email != null">
+                #{email},
+            </if>
+            <if test="telephoneNumber != null">
+                #{telephoneNumber},
+            </if>
+            <if test="age != null">
+                #{age},
+            </if>
+            <if test="gender != null">
+                #{gender},
+            </if>
+            <if test="idCardNumber != null">
+                #{id_card_number},
+            </if>
+            <if test="address != null">
+                #{address},
+            </if>
+            <if test="introduction != null">
+                #{introduction},
+            </if>
+            now(),
+            now(),
+            0
+        );
 
+    </insert>
+
+    <update id="updateJournalist" parameterType="com.leezekee.pojo.Journalist">
+        update tb_journalist
+        <set>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="telephoneNumber != null">
+                telephone_number = #{telephoneNumber},
+            </if>
+            <if test="age != null">
+                age = #{age},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="idCardNumber != null">
+                id_card_number = #{idCardNumber},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            <if test="introduction != null">
+                introduction = #{introduction},
+            </if>
+            update_time = now()
+        </set>
+        where id=#{id};
+    </update>
+
+    <update id="deleteJournalist">
+        update tb_journalist
+        set is_delete = 1, update_time = now()
+        where id = #{id};
+    </update>
+
+    <select id="findAllJournalist" resultType="com.leezekee.pojo.Journalist">
+        select * from tb_journalist where is_delete = 0;
+    </select>
+
+    <select id="findJournalistByUsername" resultType="com.leezekee.pojo.Journalist">
+        select *
+        from tb_journalist
+        where username = #{username} and is_delete = 0;
+    </select>
+
+    <select id="findJournalistById" resultType="com.leezekee.pojo.Journalist">
+        select *
+        from tb_journalist
+        where id = #{id} and is_delete = 0;
+    </select>
 </mapper>

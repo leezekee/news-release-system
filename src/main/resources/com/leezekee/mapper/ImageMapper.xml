@@ -2,5 +2,61 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.leezekee.mapper.ImageMapper">
+    <insert id="insertImage" parameterType="com.leezekee.pojo.Image" useGeneratedKeys="true" keyProperty="id">
+        insert into
+            tb_image (
+                      image_url,
+                      news_id,
+                      journalist_id,
+                      update_time,
+                      create_time,
+                      is_delete
+            )
+        values (
+                #{imageUrl},
+                #{newsId},
+                #{journalistId},
+                now(),
+                now(),
+                0
+               );
+    </insert>
+
+    <update id="deleteImageByJournalistId">
+        update tb_image
+        set is_delete = 1
+        where journalist_id = #{id}
+    </update>
+
+    <update id="deleteImageByNewsId">
+        update tb_image
+        set is_delete = 1
+        where news_id = #{id}
+    </update>
+
+    <update id="updateImage" parameterType="com.leezekee.pojo.Image">
+        update tb_image
+        set image_url = #{imageUrl},
+            update_time = now()
+        where id = #{id};
+    </update>
+
+    <update id="deleteImage">
+        update tb_image
+        set is_delete = 1
+        where id = #{id};
+    </update>
+
+    <select id="findImageById" resultType="com.leezekee.pojo.Image">
+        select *
+        from tb_image
+        where id = #{imageId} and is_delete = 0;
+    </select>
+
+    <select id="findImageByNewsId" resultType="com.leezekee.pojo.Image">
+        select *
+        from tb_image
+        where news_id = #{newsId} and is_delete = 0;
+    </select>
 
 </mapper>

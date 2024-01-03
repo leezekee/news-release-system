@@ -1,22 +1,14 @@
 package com.leezekee.utils;
 
-import com.leezekee.pojo.Role;
 import com.leezekee.pojo.User;
 
 import java.util.Map;
 
 public class AuthorizationUtil {
-    public static boolean noLowerThanCurrentUser(User user) {
+    public static boolean lowerThanCurrentUser(Integer userRole) {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentRole = (Integer) claims.get("role");
-        Integer userRole = user.getRole();
-        return userRole - currentRole >= 0;
-    }
-
-    public static boolean noLowerThanCurrentUser(Integer userRole) {
-        Map<String, Object> claims = ThreadLocalUtil.get();
-        Integer currentRole = (Integer) claims.get("role");
-        return userRole - currentRole >= 0;
+        return userRole - currentRole < 0;
     }
 
 
@@ -35,16 +27,22 @@ public class AuthorizationUtil {
         }
     }
 
-    public static boolean noLowerThanCurrentUserAndOneSelf(Integer userRole, Integer userId) {
+    public static boolean lowerThanCurrentUserOrNotOneSelf(Integer userRole, Integer userId) {
         Map<String, Object> claims = ThreadLocalUtil.get();
         Integer currentRole = (Integer) claims.get("role");
         Integer currentId = (Integer) claims.get("id");
         if (userRole.compareTo(currentRole) > 0) {
-            return true;
-        } else if (userRole.compareTo(currentRole) == 0) {
-            return userId.equals(currentId);
-        } else {
             return false;
+        } else if (userRole.compareTo(currentRole) == 0) {
+            return !userId.equals(currentId);
+        } else {
+            return true;
         }
+    }
+
+    public static boolean equalsCurrentUser(Integer userRole) {
+        Map<String, Object> claims = ThreadLocalUtil.get();
+        Integer currentRole = (Integer) claims.get("role");
+        return userRole.equals(currentRole);
     }
 }

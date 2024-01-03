@@ -2,5 +2,124 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.leezekee.mapper.NewsMapper">
+    <insert id="addNews" useGeneratedKeys="true" keyProperty="id" parameterType="com.leezekee.pojo.News">
+        insert into tb_news(
+                            title,
+                            journalist_id,
+                            time,
+                            status,
+                            update_time,
+                            create_time,
+                            review_comment,
+                            is_delete
+        )
+        values (
+                #{title},
+                #{journalistId},
+                now(),
+                -2,
+                now(),
+                now(),
+                '',
+                0
+        );
+    </insert>
 
+    <update id="updateNews" parameterType="com.leezekee.pojo.News">
+        update tb_news
+        set title = #{title},
+            time = now(),
+            content = #{content},
+            update_time = now(),
+            review_comment = ''
+        where id = #{id};
+    </update>
+
+    <update id="updateStatus" parameterType="com.leezekee.pojo.News">
+        update tb_news
+        <set>
+            status = #{status},
+            <if test="status == -1">
+                reivew_comment = #{reviewComment},
+            </if>
+            update_time = now()
+        </set>
+        where id = #{id};
+    </update>
+
+    <update id="deleteNews">
+        update tb_news
+        set is_delete = 1, update_time = now()
+        where id = #{id};
+    </update>
+
+    <update id="deleteNewsByJournalistId">
+        update tb_news
+        set is_delete = 1, update_time = now()
+        where journalist_id = #{id};
+    </update>
+
+    <update id="saveNews">
+        update tb_news
+        set title = #{title},
+            content = #{content},
+            update_time = now(),
+            status = -2
+        where id = #{id};
+    </update>
+
+    <update id="submitNews">
+        update tb_news
+        set title = #{title},
+            content = #{content},
+            update_time = now(),
+            status = 0
+        where id = #{id};
+    </update>
+
+    <select id="searchAllByKeyword" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and title like concat('%', #{keyword}, '%')
+        order by title;
+    </select>
+
+    <select id="searchByKeyword" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and title like concat('%', #{keyword}, '%')
+        order by title
+        limit #{limit};
+    </select>
+
+    <select id="findNewsById" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and id = #{id};
+    </select>
+
+    <select id="findAllNews" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0;
+    </select>
+
+    <select id="findAllNewsByJournalistId" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0
+            and journalist_id = #{journalistId};
+    </select>
+
+    <select id="findAllReleasedNews" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and status = 1;
+    </select>
+
+    <select id="findUnreviewedNewsList" resultType="com.leezekee.pojo.News">
+        select *
+        from tb_news
+        where is_delete = 0 and status = 0;
+    </select>
 </mapper>

@@ -2,9 +2,6 @@ package com.leezekee.utils;
 
 import com.leezekee.pojo.Role;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class CommonUtil {
     public static String hideIdCardNumber(String idCardNumber) {
         return idCardNumber.substring(0, 3) + "***********" + idCardNumber.substring(14);
@@ -36,13 +33,12 @@ public class CommonUtil {
                 "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
                 "Y", "Z"
         };
-        ;
         // 随机8位字符串
         StringBuilder randomPasswordList = new StringBuilder();
         for (int i = 0; i < 8; i++) {
             int randomIndex = (int) (Math.random() * randomList.length);
             randomPasswordList.append(randomList[randomIndex]);
         }
-        return randomPasswordList.toString();
+        return Md5Util.genMd5String(randomPasswordList.toString());
     }
 }

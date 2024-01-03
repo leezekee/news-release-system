@@ -16,14 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * # 2. 要求有以下功能：
- * # （1）基本信息维护：能够录入、修改、删除记者基本信息；
- * # （2）新闻提交：登录确认，新闻录入，个人信息维护；
- * # （3）审核：新闻显示控制，新闻删除，图片删除；
- * # （4）显示：新闻题目显示，新闻内容显示，图片显示；
- */
-
 @RestController
 @RequestMapping("/chiefEditor")
 @Validated
@@ -35,7 +27,7 @@ public class ChiefEditorController {
 
     @PostMapping
     public Response addChiefEditor(@RequestBody @Validated({ChiefEditor.Add.class}) ChiefEditor chiefEditor) {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.ADMINISTRATOR)) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.ADMINISTRATOR)) {
             return Response.error(Code.UNAUTHORIZED, "无权添加用户");
         }
         int id = chiefEditorService.addChiefEditor(chiefEditor);
@@ -66,7 +58,7 @@ public class ChiefEditorController {
 
     @GetMapping("/info")
     public Response getCurrentChiefEditorInfo() {
-        if (!AuthorizationUtil.noLowerThanCurrentUser(Role.CHIEF_EDITOR)) {
+        if (AuthorizationUtil.lowerThanCurrentUser(Role.CHIEF_EDITOR)) {
             return Response.error(Code.UNAUTHORIZED, "无权获取信息");
         }
         Map<String, Object> claims = ThreadLocalUtil.get();
@@ -94,7 +86,7 @@ public class ChiefEditorController {
             return Response.error(Code.UNAUTHORIZED,"无权修改他人信息！");
         }
         if (chiefEditor.getName() != null) {
-            if (!AuthorizationUtil.noLowerThanCurrentUser(Role.ADMINISTRATOR)) {
+            if (AuthorizationUtil.lowerThanCurrentUser(Role.ADMINISTRATOR)) {
                 chiefEditor.setName(null);
                 return Response.error(Code.UNAUTHORIZED,"无权修改姓名！");
             }
